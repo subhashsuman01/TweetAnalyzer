@@ -13,8 +13,15 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class TweetConsumer {
+
+    ExecutorService executorService = new ThreadPoolExecutor(10, 100, 100L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
     Logger logger = LoggerFactory.getLogger(TweetConsumer.class);
 
@@ -34,21 +41,24 @@ public class TweetConsumer {
     public void listenToTweets(String msg) throws JsonProcessingException {
         logger.info("Received tweet: {}", msg);
         TweetDataWrapper tweetDataWrapper = tweetMapper.readValue(msg, TweetDataWrapper.class);
-        if(mongodbService.isInteresting(tweetDataWrapper.data().text())){
-            redisTemplate.opsForSet().add("interesting:tweet", tweetDataWrapper.data().id());
-            SimpleTweetDao simpleTweetDao = Mapper.convertToSimpleTweet(tweetDataWrapper);
-            tweetElasticRepository.save(simpleTweetDao);
-        }
-
+        executorService.execute(()->{
+            if(mongodbService.isInteresting(tweetDataWrapper.data().text())){
+                redisTemplate.opsForSet().add("interesting:tweet", tweetDataWrapper.data().id());
+                SimpleTweetDao simpleTweetDao = Mapper.convertToSimpleTweet(tweetDataWrapper);
+                tweetElasticRepository.save(simpleTweetDao);
+            }
+        });
     }
 
     @KafkaListener(topics = "reply", groupId = "reply")
     public void listenToReplies(String msg) throws JsonProcessingException {
         logger.info("Received reply: {}", msg);
         TweetDataWrapper tweetDataWrapper = tweetMapper.readValue(msg, TweetDataWrapper.class);
-        if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember("interesting:tweet", tweetDataWrapper.data().id()))){
-            SimpleTweetDao simpleTweetDao = Mapper.convertToSimpleTweet(tweetDataWrapper);
-            tweetElasticRepository.save(simpleTweetDao);
-        }
+        executorService.execute(()->{
+            if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember("interesting:tweet", tweetDataWrapper.data().id()))){
+                SimpleTweetDao simpleTweetDao = Mapper.convertToSimpleTweet(tweetDataWrapper);
+                tweetElasticRepository.save(simpleTweetDao);
+            }
+        });
     }
 }
