@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -29,6 +30,7 @@ public class MongodbService implements CommandLineRunner {
     public void init(){
         regexRepository.findAll().forEach(
                 regexItem -> regexMap.put(regexItem.getId(), regexItem.getRegex()));
+        System.out.println(regexMap.toString());
     }
 
     public boolean isInteresting(String tweetText) {
@@ -45,9 +47,8 @@ public class MongodbService implements CommandLineRunner {
         flux.subscribe(changeStreamEvent -> {
             RegexItem regexItem = changeStreamEvent.getBody();
             switch (changeStreamEvent.getOperationType()){
-                case INSERT -> regexMap.put(regexItem.getId(), regexItem.getRegex());
+                case INSERT, UPDATE -> regexMap.put(regexItem.getId(), regexItem.getRegex());
                 case DELETE -> regexMap.remove(regexItem.getId());
-                case UPDATE -> regexMap.put(regexItem.getId(), regexItem.getRegex());
             }
         });
     }

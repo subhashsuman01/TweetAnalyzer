@@ -11,13 +11,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ExecutorService;
-
 @Service
 public class TweetConsumer {
 
     @Autowired
-    RedisTemplate redisTemplate;
+    RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     MongodbService mongodbService;
@@ -29,10 +27,10 @@ public class TweetConsumer {
     ObjectMapper tweetMapper;
 
     @KafkaListener(topics = "tweet", groupId = "tweet")
-    public void listenToTweets(String key, String msg) throws JsonProcessingException {
+    public void listenToTweets(String msg) throws JsonProcessingException {
         TweetDataWrapper tweetDataWrapper = tweetMapper.readValue(msg, TweetDataWrapper.class);
         if(mongodbService.isInteresting(tweetDataWrapper.data().text())){
-            redisTemplate.opsForSet().add("interesting:tweet", key);
+            redisTemplate.opsForSet().add("interesting:tweet", tweetDataWrapper.data().id());
             SimpleTweet simpleTweet = Mapper.convertToSimpleTweet(tweetDataWrapper);
             tweetElasticRepository.save(simpleTweet);
         }
@@ -40,9 +38,9 @@ public class TweetConsumer {
     }
 
     @KafkaListener(topics = "reply", groupId = "reply")
-    public void listenToReplies(String key, String msg) throws JsonProcessingException {
+    public void listenToReplies(String msg) throws JsonProcessingException {
         TweetDataWrapper tweetDataWrapper = tweetMapper.readValue(msg, TweetDataWrapper.class);
-        if(redisTemplate.opsForSet().isMember("interesting:tweet", key)){
+        if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember("interesting:tweet", tweetDataWrapper.data().id()))){
             SimpleTweet simpleTweet = Mapper.convertToSimpleTweet(tweetDataWrapper);
             tweetElasticRepository.save(simpleTweet);
         }

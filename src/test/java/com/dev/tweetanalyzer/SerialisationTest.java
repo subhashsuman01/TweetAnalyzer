@@ -37,5 +37,11 @@ public class SerialisationTest {
         System.out.println(tweetDataWrapper);
         SimpleTweet simpleTweet = Mapper.convertToSimpleTweet(tweetDataWrapper);
         System.out.println(simpleTweet);
+        System.out.println(tweetDataWrapper.data().id());
+    }
+
+    @Test
+    public void redisTest(){
+
     }
 }
