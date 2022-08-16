@@ -1,7 +1,7 @@
 package com.dev.tweetanalyzer.util;
 
 import com.dev.tweetanalyzer.data.TweetDataWrapper;
-import com.dev.tweetanalyzer.model.SimpleTweet;
+import com.dev.tweetanalyzer.model.SimpleTweetDao;
 
 public class Mapper {
 
@@ -11,8 +11,8 @@ public class Mapper {
         return tweetDataWrapper.data().referenced_tweets().get(0).id();
     }
 
-    public static SimpleTweet convertToSimpleTweet(TweetDataWrapper tweetDataWrapper){
-        return new SimpleTweet(
+    public static SimpleTweetDao convertToSimpleTweet(TweetDataWrapper tweetDataWrapper){
+        return new SimpleTweetDao(
                 tweetDataWrapper.data().id(),
                 tweetDataWrapper.data().text(),
                 tweetDataWrapper.data().created_at(),

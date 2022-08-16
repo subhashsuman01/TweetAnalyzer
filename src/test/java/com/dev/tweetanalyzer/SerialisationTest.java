@@ -1,18 +1,13 @@
 package com.dev.tweetanalyzer;
 
 import com.dev.tweetanalyzer.data.TweetDataWrapper;
-import com.dev.tweetanalyzer.model.SimpleTweet;
+import com.dev.tweetanalyzer.model.SimpleTweetDao;
 import com.dev.tweetanalyzer.util.Mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -35,8 +30,8 @@ public class SerialisationTest {
     public void serializationTest() throws JsonProcessingException {
         TweetDataWrapper tweetDataWrapper = tweetMapper.readValue(tweet, TweetDataWrapper.class);
         System.out.println(tweetDataWrapper);
-        SimpleTweet simpleTweet = Mapper.convertToSimpleTweet(tweetDataWrapper);
-        System.out.println(simpleTweet);
+        SimpleTweetDao simpleTweetDao = Mapper.convertToSimpleTweet(tweetDataWrapper);
+        System.out.println(simpleTweetDao);
         System.out.println(tweetDataWrapper.data().id());
     }
 

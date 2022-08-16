@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.env.Environment;
@@ -14,10 +16,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Objects;
 
 @Component
 public class TweetProducer implements CommandLineRunner {
+    Logger logger = LoggerFactory.getLogger(TweetProducer.class);
     @Autowired
     private Environment env;
 
@@ -27,16 +29,13 @@ public class TweetProducer implements CommandLineRunner {
     @Autowired
     ObjectMapper tweetMapper;
 
+    @Autowired
+    private Request request;
+
     @Async
     private void start() throws IOException {
 
         OkHttpClient client = new OkHttpClient();
-
-
-        Request request = new Request.Builder()
-                .url(Objects.requireNonNull(env.getProperty("twitter.url")))
-                .addHeader("Authorization", "Bearer " + env.getProperty("twitter.access.token"))
-                .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
@@ -51,7 +50,7 @@ public class TweetProducer implements CommandLineRunner {
                         else
                             kafkaTemplate.send("tweet", tweetDataWrapper.data().id(), inputLine);
                     } catch (MismatchedInputException e){
-
+                        logger.warn(e.getMessage());
                     } catch (IOException e){
                         throw new IOException(e);
                     }

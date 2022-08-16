@@ -1,4 +1,4 @@
-package com.dev.tweetanalyzer.repository;
+package com.dev.tweetanalyzer.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -6,14 +6,11 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 @Document(indexName = "tweets")
-public class SimpleTweet {
+public class SimpleTweetDao {
     @Id
     final private String id;
     final private String text;
@@ -23,7 +20,7 @@ public class SimpleTweet {
     final private OffsetDateTime time;
     final private String parentId;
 
-    public SimpleTweet(String id, String text, OffsetDateTime time, String parentId){
+    public SimpleTweetDao(String id, String text, OffsetDateTime time, String parentId){
         this.id = id;
         this.text = text;
         this.time = time;

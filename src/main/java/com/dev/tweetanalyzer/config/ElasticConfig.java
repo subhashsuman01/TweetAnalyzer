@@ -1,4 +1,4 @@
-package com.dev.tweetanalyzer.repository;
+package com.dev.tweetanalyzer.config;
 
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Bean;
